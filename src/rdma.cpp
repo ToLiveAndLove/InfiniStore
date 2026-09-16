@@ -108,7 +108,8 @@ int open_rdma_device(std::string dev_name, int ib_port, std::string link_type, i
             }
         }
 
-        if (ibv_query_gid(rdma_dev->ib_ctx, 1, rdma_dev->gid_index, &rdma_dev->gid) < 0) {
+        if (ibv_query_gid(rdma_dev->ib_ctx, rdma_dev->ib_port, rdma_dev->gid_index,
+                          &rdma_dev->gid) < 0) {
             ERROR("Failed to get GID from index {}", rdma_dev->gid_index);
             return -1;
         }

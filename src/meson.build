@@ -68,3 +68,33 @@ python3.extension_module('_infinistore',
   dependencies: [pybind_dep, libuv_dep, fmt_dep, boost_stack_dep, ibverbs_dep],
   install: true
 )
+
+rdma_test_wrappers = [
+  'ibv_get_device_list',
+  'ibv_get_device_name',
+  'ibv_open_device',
+  'ibv_query_port',
+  'ibv_query_gid',
+  'ibv_alloc_pd',
+  'ibv_dealloc_pd',
+  'ibv_close_device',
+]
+rdma_test_link_args = []
+foreach symbol : rdma_test_wrappers
+  rdma_test_link_args += '-Wl,--wrap=' + symbol
+endforeach
+
+rdma_device_test = executable('test_rdma_device',
+  sources: ['test_rdma_device.cpp', 'rdma.cpp', 'utils.cpp'] + generated_headers,
+  dependencies: [fmt_dep, boost_stack_dep, ibverbs_dep],
+  link_args: rdma_test_link_args,
+  build_by_default: false,
+)
+foreach port : ['1', '2']
+  foreach hint : ['-1', '3']
+    test('rdma-gid-port-' + port + '-hint-' + hint, rdma_device_test,
+      args: [port, hint],
+      suite: 'rdma-device',
+    )
+  endforeach
+endforeach
